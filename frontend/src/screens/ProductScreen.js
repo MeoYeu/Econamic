@@ -11,8 +11,8 @@ import { SendOutlined } from "@ant-design/icons";
 import io from "socket.io-client";
 import toast, { Toaster } from "../../node_modules/react-hot-toast/dist/index";
 import { NameConText } from "./GlobalState";
-
-
+import axios from "axios";
+import Message from "./Message";
 
 export default function ProductScreen(props) {
   const dispatch = useDispatch();
@@ -27,32 +27,34 @@ export default function ProductScreen(props) {
   const ch = useRef("");
   const [sanpham, setsanpham] = useState();
   const productReviewCreate = useSelector((state) => state.productReviewCreate);
-  const state= useContext(NameConText);
-  const socket=state.socket;
-  
+  const state = useContext(NameConText);
+  const socket = state.socket;
+  const ScollRef = useRef();
+  const beta = useRef(false);
+  const [recei, setRecei] = useState();
   const {
     loading: loadingReviewCreate,
     error: errorReviewCreate,
     success: successReviewCreate,
   } = productReviewCreate;
+  const [newMessage, setNewMessage] = useState();
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   // const [state, setstate] = useState([]);
   const [message, setmessage] = useState([]);
+  const [conversation, setConversation] = useState([]);
   const showModal = (e) => {
     e.preventDefault();
     if (!userInfo) {
       props.history.push("/signin");
     }
-    socket.emit("createchat", {userInfo,productId});
-    
+    socket.emit("createchat", { userInfo, productId });
 
     setIsModalVisible(true);
   };
 
-  
   useEffect(() => {
     if (product != undefined) setsanpham(product);
   }, [product, productId]);
@@ -67,8 +69,6 @@ export default function ProductScreen(props) {
 
   useEffect(() => {
     if (successReviewCreate) {
-      
-      
       setRating("");
       setComment("");
       dispatch({ type: PRODUCT_REVIEW_CREATE_RESET });
@@ -82,64 +82,70 @@ export default function ProductScreen(props) {
   const submitHandler = (e) => {
     e.preventDefault();
 
-    if (comment!="" && rating) {
+    if (comment != "" && rating) {
       socket.emit("createComment", {
         productId,
         comment,
         rating,
         name: userInfo.name,
       });
-      toast.success('review thành công')
-      // dispatch(
-      //   createReview(productId, { rating, comment, name: userInfo.name })
-      // );
+      toast.success("review thành công");
     } else {
-      toast.error('nhận xét và đánh giá');
-      return
+      toast.error("nhận xét và đánh giá");
+      return;
     }
   };
-   socket && socket.on("sendmsg",data=>{
-    setmessage([...message, data.msg]);
-    console.log("tin gửi từ server",data.msg);
-  })
-  // useEffect(() => {
-  //   socket.on("sendmsg",data=>{
-  //     setmessage([...message, data.msg]);
-  //     console.log("tin gửi từ server",data.msg);
-   
-  //   })
-  // }, [chatItem])
+  socket &&
+    socket.on("sendmsg", (data) => {
+     
+      setmessage([...message, data.msg]);
+      setRecei(data.sender);
+    });
+
   useEffect(() => {
     if (socket) {
       socket.on("sendCommentToClient", (msg) => {
-        setsanpham(msg);     
+        setsanpham(msg);
       });
       return () => socket.off("sendCommentToClient");
     }
-  },[comment]);
-  socket && socket.on("guilai",data=>{
-    console.log("tin lại",data);
-    setmessage([...message, data.msg]);
-  })
+  }, [comment]);
 
   const sendHandle = (e) => {
     e.preventDefault();
-    
   };
-
-  const onkeypresshandl = async(e) => {
-    if (e.key === "Enter") {
-      setmessage([...message, e.target.value]);
-      
-    await  socket.emit("getmsg", { msg: e.target.value, productId, userInfo,room:Date.now() }
-      );
+  socket &&
+    socket.on("guinua",async (data) => {
      
+     await setmessage([
+        ...message,
+        { text: data.msg, sender: data.userInfo, createdAt: Date.now() },
+      ]);
+    });
+  const onkeypresshandl = async (e) => {
+    if (e.key === "Enter") {
+      socket.emit("getmsg", {
+        msg: e.target.value,
+        productId,
+        userInfo,
+      });
+
+      setmessage([
+        ...message,
+        { text: e.target.value, sender: userInfo._id, createdAt: Date.now() },
+      ]);
+      const product = await axios.get(`/api/products/${productId}`);
     }
   };
 
   function onchangeInputChat(e) {
     setChatItem(e.target.value);
   }
+  useEffect(() => {
+    if (ScollRef && ScollRef.current)
+      ScollRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [message]);
+ 
 
   return (
     <div>
@@ -239,21 +245,17 @@ export default function ProductScreen(props) {
                           </div>
                         </div>
                       </li>
-                      
                     </>
                   )}
-                  
-                  <button
-                          onClick={addToCartHandler}
-                          className="primary block"
-                        >
-                          Thêm vào giỏ hàng
-                        </button>
+
+                  <button onClick={addToCartHandler} className="primary block">
+                    Thêm vào giỏ hàng
+                  </button>
                 </ul>
               </div>
             </div>
           </div>
-          <div >
+          <div>
             {userInfo ? (
               <form className="form" onSubmit={submitHandler}>
                 <div>
@@ -302,47 +304,59 @@ export default function ProductScreen(props) {
                 Hãy <Link to="/signin">Đăng nhập</Link> để viết đánh giá
               </MessageBox>
             )}
-            <Button type="primary" onClick={showModal}>
+            <div>
+            <Button type="primary" ref={beta} onClick={showModal}>
               Message
             </Button>
-
+              </div>
             <Modal
               title="Nhắn tin"
               visible={isModalVisible}
               footer={null}
               onOk={handleOk}
               onCancel={handleCancel}
+            
             >
-              <div style={{ height: "200px", border: "1px solid" }}>
+                <div className="scroll" >
                 {message &&
-                  message.map((item, index) => {
-                    return (
-                      <div key={index}>
-                        <li>{item}</li>
-                      </div>
-                    );
-                  })}
-              </div>
-              <Row>
-                <Col span={22}>
-                  <Input
-                    ref={ch}
-                    placeholder="tin nhắn"
-                    onChange={(e) => onchangeInputChat(e)}
-                    onKeyPress={onkeypresshandl}
-                  />
-                </Col>
-                <Col span={2}>
-                  <Button
-                    onClick={sendHandle}
-                    style={{ marginLeft: "6px" }}
-                    type="primary"
-                    shape="square"
-                    icon={<SendOutlined />}
-                  />
-                </Col>
-              </Row>
+                  message.map((item, index) => (
+                    <div key={index+1}>
+                        <Message 
+                          
+                          message={item && item}
+                          own={item?.sender === userInfo._id}
+                          recei={recei}
+                        ></Message>
+                    </div>
+                  ))}
+                </div>
+             
+             
+              
+                <Row>
+                  <Col span={22}>
+                    <Input
+                      ref={ch}
+                      placeholder="tin nhắn"
+                      onChange={(e) => onchangeInputChat(e)}
+                      onKeyPress={onkeypresshandl}
+                      value={newMessage}
+                    />
+                  </Col>
+                  <Col span={2}>
+                    <Button
+                      onClick={sendHandle}
+                      style={{ marginLeft: "6px" }}
+                      type="primary"
+                      shape="square"
+                      icon={<SendOutlined />}
+                    />
+                  </Col>
+                </Row>
+              
             </Modal>
+              
+            
           </div>
           <div>
             <h2 id="reviews">Reviews</h2>
@@ -350,16 +364,17 @@ export default function ProductScreen(props) {
               <MessageBox>không có lượt đánh giá</MessageBox>
             )}
             <ul>
-              {sanpham && sanpham.reviews.map((review) => (
-                <li key={review._id}>
-                  <strong>{review.name}</strong>
-                  <div>
-                    <Rating rating={review.rating} caption=" "></Rating>
-                  </div>
-                  <p>{review.createdAt.substring(0, 10)}</p>
-                  <p>{review.comment}</p>
-                </li>
-              ))}
+              {sanpham &&
+                sanpham.reviews.map((review) => (
+                  <li key={review._id}>
+                    <strong>{review.name}</strong>
+                    <div>
+                      <Rating rating={review.rating} caption=" "></Rating>
+                    </div>
+                    <p>{review.createdAt.substring(0, 10)}</p>
+                    <p>{review.comment}</p>
+                  </li>
+                ))}
               <li></li>
             </ul>
           </div>

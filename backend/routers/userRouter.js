@@ -161,6 +161,7 @@ userRouter.post(
           _id: user._id,
           name: user.name,
           logo:user.logo,
+          isAdmin:user.isAdmin,
           token: generateToken(user),
         });
         return;

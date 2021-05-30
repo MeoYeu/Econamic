@@ -45,33 +45,43 @@ export default function HomeScreen() {
      
     }
   }, [socket, userInfo]);
-  function onchangeInputChat(e) {
-    setChatItem(e.target.value);
-  }
-  const onkeypresshandl = (e) => {
-    if (e.key === "Enter") {
-      setTinnhan([...tinnhan, e.target.value]);
-      socket.emit("getmsg", { msg: e.target.value, userInfo }
-      );
+  // function onchangeInputChat(e) {
+  //   setChatItem(e.target.value);
+  // }
+  // const onkeypresshandl = (e) => {
+  //   if (e.key === "Enter") {
+  //     setTinnhan([...tinnhan, e.target.value]);
+  //     socket.emit("getmsg", { msg: e.target.value, userInfo }
+  //     );
      
-    }
-  };
-  socket &&
-    socket.on("sendmsg", (data) => {
+  //   }
+  // };
+  // socket &&
+  //   socket.on("sendmsg", (data) => {
      
-      let check=listuser.every((user) => user._id !== data.sender._id);
+  //     let check=listuser.every((user) => user._id !== data.sender._id);
       
-      if(!check)
-      {
+  //     if(!check)
+  //     {
         
-      }else{
-        setListUser([...listuser,data.sender])
-        setMessage(message+1);
-        setTinnhan([...tinnhan,data.msg])
+  //     }else{
+  //       setListUser([...listuser,data.sender])
+  //       setTinnhan([...tinnhan,data.msg])
+  //     }
+  //   });
+    // socket &&
+    // socket.on("guinua", (data) => {
+    
+    //   let check=listuser.every((user) => user?._id !== data.sender);
+      
+    //   if(!check)
+    //   {
         
-     
-      }
-    });
+    //   }else{
+    //     setListUser([...listuser,data.sender])
+    //     setTinnhan([...tinnhan,data.msg])
+    //   }
+    // });
 
   return (
     <div>
@@ -120,7 +130,7 @@ export default function HomeScreen() {
           </div>
         </>
       )}
-      <Modal
+      {/* <Modal
           title="Nhắn tin"
           visible={isModalVisible}
           footer={null}
@@ -155,7 +165,7 @@ export default function HomeScreen() {
               />
             </Col>
           </Row>
-        </Modal>
+        </Modal> */}
     </div>
   );
 }

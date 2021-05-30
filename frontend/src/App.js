@@ -1,52 +1,52 @@
-import React, { useEffect, useState ,useContext} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
-import { signout } from './actions/userActions';
-import AdminRoute from './components/AdminRoute';
-import PrivateRoute from './components/PrivateRoute';
-import CartScreen from './screens/CartScreen';
-import HomeScreen from './screens/HomeScreen';
-import OrderHistoryScreen from './screens/OrderHistoryScreen';
-import OrderScreen from './screens/OrderScreen';
-import PaymentMethodScreen from './screens/PaymentMethodScreen';
-import PlaceOrderScreen from './screens/PlaceOrderScreen';
-import ProductListScreen from './screens/ProductListScreen';
-import ProductScreen from './screens/ProductScreen';
-import ProfileScreen from './screens/ProfileScreen';
-import RegisterScreen from './screens/RegisterScreen';
-import ShippingAddressScreen from './screens/ShippingAddressScreen';
-import SigninScreen from './screens/SigninScreen';
-import ProductEditScreen from './screens/ProductEditScreen';
-import OrderListScreen from './screens/OrderListScreen';
-import UserListScreen from './screens/UserListScreen';
-import UserEditScreen from './screens/UserEditScreen';
-import SellerRoute from './components/SellerRoute';
-import SellerScreen from './screens/SellerScreen';
-import SearchBox from './components/SearchBox';
-import SearchScreen from './screens/SearchScreen';
-import { listProductCategories } from './actions/productActions';
-import LoadingBox from './components/LoadingBox';
-import MessageBox from './components/MessageBox';
-import MapScreen from './screens/MapScreen';
-import ListProductScreen from './screens/ListProductScreen';
-import ForgetPassword from './screens/ForgetPassword';
-import SendMail from './screens/SearchMail';
-import SearchMail from './screens/SearchMail';
-import TokenEmail from './screens/TokenEmail';
-import SendTokenEmail from './screens/SendTokenEmail';
-import ResetPassWord from './screens/ResetPassWord';
-import Join from './screens/Join';
-import Chat from './screens/Chat';
-import TinhThanh from './screens/TinhThanh';
-import { NameConText } from './screens/GlobalState';
-import Thongbao from './screens/Thongbao';
-
+import React, { useEffect, useState, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { BrowserRouter, Link, Route } from "react-router-dom";
+import { signout } from "./actions/userActions";
+import AdminRoute from "./components/AdminRoute";
+import PrivateRoute from "./components/PrivateRoute";
+import CartScreen from "./screens/CartScreen";
+import HomeScreen from "./screens/HomeScreen";
+import OrderHistoryScreen from "./screens/OrderHistoryScreen";
+import OrderScreen from "./screens/OrderScreen";
+import PaymentMethodScreen from "./screens/PaymentMethodScreen";
+import PlaceOrderScreen from "./screens/PlaceOrderScreen";
+import ProductListScreen from "./screens/ProductListScreen";
+import ProductScreen from "./screens/ProductScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+import RegisterScreen from "./screens/RegisterScreen";
+import ShippingAddressScreen from "./screens/ShippingAddressScreen";
+import SigninScreen from "./screens/SigninScreen";
+import ProductEditScreen from "./screens/ProductEditScreen";
+import OrderListScreen from "./screens/OrderListScreen";
+import UserListScreen from "./screens/UserListScreen";
+import UserEditScreen from "./screens/UserEditScreen";
+import SellerRoute from "./components/SellerRoute";
+import SellerScreen from "./screens/SellerScreen";
+import SearchBox from "./components/SearchBox";
+import SearchScreen from "./screens/SearchScreen";
+import { listProductCategories } from "./actions/productActions";
+import LoadingBox from "./components/LoadingBox";
+import MessageBox from "./components/MessageBox";
+import MapScreen from "./screens/MapScreen";
+import ListProductScreen from "./screens/ListProductScreen";
+import ForgetPassword from "./screens/ForgetPassword";
+import SendMail from "./screens/SearchMail";
+import SearchMail from "./screens/SearchMail";
+import TokenEmail from "./screens/TokenEmail";
+import SendTokenEmail from "./screens/SendTokenEmail";
+import ResetPassWord from "./screens/ResetPassWord";
+import Join from "./screens/Join";
+import Chat from "./screens/Chat";
+import TinhThanh from "./screens/TinhThanh";
+import { NameConText } from "./screens/GlobalState";
+import Thongbao from "./screens/Thongbao";
+import { MessageOutlined } from "@ant-design/icons";
 
 function App() {
   const orderList = useSelector((state) => state.orderList);
-  const [messageNotification, setmessageNotification] = useState(null)
+  const [messageNotification, setmessageNotification] = useState(null);
   const cart = useSelector((state) => state.cart);
-  const [tinnhan, setTinnhan] = useState()
+  const [tinnhan, setTinnhan] = useState();
   const [sidebarIsOpen, setSidebarIsOpen] = useState(false);
   const { cartItems } = cart;
   const userSignin = useSelector((state) => state.userSignin);
@@ -55,12 +55,10 @@ function App() {
   const signoutHandler = () => {
     dispatch(signout());
   };
-  const state= useContext(NameConText)
-  const socket=state.socket;
-  const setproduct=state.setMessage;
-  const message=state.message;
-
-  
+  const state = useContext(NameConText);
+  const socket = state.socket;
+  const setMessage = state.setMessage;
+  const message = state.message;
 
   const productCategoryList = useSelector((state) => state.productCategoryList);
   const {
@@ -71,12 +69,25 @@ function App() {
   useEffect(() => {
     dispatch(listProductCategories());
   }, [dispatch]);
+ 
+   useEffect(() => {
+    socket && socket.on("sendmsg",data=>{
+      setMessage(message+1);
+    })
+    socket && socket.on("guinua",data=>{
+      setMessage(message+1);
+    })
+    
+   }, [socket])
+  
+  
   return (
     <BrowserRouter>
       <div className="grid-container">
         <header className="row">
-          <div >
-            <button onMouseOver={() => setSidebarIsOpen(true)}
+          <div>
+            <button
+              onMouseOver={() => setSidebarIsOpen(true)}
               type="button"
               className="open-sidebar"
               onClick={() => setSidebarIsOpen(true)}
@@ -95,17 +106,35 @@ function App() {
             ></Route>
           </div>
           <div>
-            <Link to="/cart" className='notification'>
-            <div style={{border:'1px solid',paddingLeft:'2px',paddingRight:'4px'}}><i className='fa fa-shopping-cart' aria-hidden='true'> Giỏ Hàng  </i></div>  
+            <Link to="/cart" className="notification">
+              <div
+                style={{
+                  border: "1px solid",
+                  paddingLeft: "2px",
+                  paddingRight: "4px",
+                }}
+              >
+                
+                <i className="fa fa-shopping-cart" aria-hidden="true">
+                  {" "}
+                  Giỏ Hàng{" "}
+                </i>
+              </div>
               {cartItems.length > 0 && (
                 <span className="badge">{cartItems.length}</span>
               )}
             </Link>
-            
+            {userInfo &&  (
+              <Link to="/tinnhan" className="notification" onClick={()=>setMessage(0)} >
+                <MessageOutlined />
+                {message > 0 && <span  className="badge">{message}</span>}
+              </Link>
+            )}
+
             {userInfo ? (
               <div className="dropdown">
                 <Link to="#">
-                  {userInfo.name} <i className="fa fa-caret-down"></i>{' '}
+                  {userInfo.name} <i className="fa fa-caret-down"></i>{" "}
                 </Link>
                 <ul className="dropdown-content">
                   <li>
@@ -124,17 +153,8 @@ function App() {
             ) : (
               <Link to="/signin">Đăng nhập</Link>
             )}
-            <Link to="/thongbao" className='notification' >
-              <i className='fa fa-bell' aria-hidden='true'></i>
-              { message>0 && (
-                <span className="badge">{message}</span>
-              )
-                
-              }
-                
-             
-            </Link>
-          
+           
+
             {userInfo && userInfo.isSeller && (
               <div className="dropdown">
                 <Link to="#admin">
@@ -169,18 +189,21 @@ function App() {
                     <Link to="/userlist">Users</Link>
                   </li>
                   <li>
-                    <Link to='/tinhthanh'>Tỉnh Thành</Link>
+                    <Link to="/tinhthanh">Tỉnh Thành</Link>
                   </li>
                 </ul>
               </div>
             )}
           </div>
         </header>
-        <aside className={sidebarIsOpen ? 'open' : ''} onMouseLeave={() => setSidebarIsOpen(false)}>
+        <aside
+          className={sidebarIsOpen ? "open" : ""}
+          onMouseLeave={() => setSidebarIsOpen(false)}
+        >
           <ul className="categories">
             <li>
               <strong>Danh mục</strong>
-              <button 
+              <button
                 onClick={() => setSidebarIsOpen(false)}
                 className="close-sidebar"
                 type="button"
@@ -199,7 +222,7 @@ function App() {
                     to={`/search/category/${c}`}
                     onClick={() => setSidebarIsOpen(false)}
                   >
-                   <h2>{c}</h2> 
+                    <h2>{c}</h2>
                   </Link>
                 </li>
               ))
@@ -210,7 +233,7 @@ function App() {
           <Route path="/seller/:id" component={SellerScreen}></Route>
           <Route path="/cart/:id?" component={CartScreen}></Route>
           <Route path="/product/:id" component={ProductScreen} exact></Route>
-          <Route path="/thongbao" component={Thongbao}></Route>
+          <Route path="/tinnhan" component={Thongbao}></Route>
           <Route
             path="/product/:id/edit"
             component={ProductEditScreen}
@@ -268,7 +291,7 @@ function App() {
             path="/user/:id/edit"
             component={UserEditScreen}
           ></AdminRoute>
-          <AdminRoute path='/tinhthanh' component={TinhThanh}></AdminRoute>
+          <AdminRoute path="/tinhthanh" component={TinhThanh}></AdminRoute>
           <SellerRoute
             path="/productlist/seller"
             component={ProductListScreen}
@@ -279,13 +302,12 @@ function App() {
           ></SellerRoute>
           {/* <Route path="/listproduct/pageNumber/:pageNumber" component={ListProductScreen} ></Route> */}
           <Route path="/" component={HomeScreen} exact></Route>
-          <Route path="/join" component={Join} ></Route>
-          <Route path="/chat" component={Chat} ></Route>
-          <Route path='/forgetpassword' component={SearchMail}></Route>          
-          <Route path='/reset' component={ResetPassWord}></Route>
+          <Route path="/join" component={Join}></Route>
+          <Route path="/chat" component={Chat}></Route>
+          <Route path="/forgetpassword" component={SearchMail}></Route>
+          <Route path="/reset" component={ResetPassWord}></Route>
         </main>
-        <footer className="row center" >
-          All right reserved</footer>
+        <footer className="row center">All right reserved</footer>
       </div>
     </BrowserRouter>
   );

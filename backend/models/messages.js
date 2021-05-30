@@ -1,16 +1,14 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
-    text:{type:String,require:true},
-    sender:{type:String,require:true},
-    conversationId: {
-      type: String,
-    },
+    text: { type: String },
+    sender: { type: String,require:true },
+    conversationId: { type: String,require:true },
   },
   {
     timestamps: true,
   }
 );
-const Message = mongoose.model('Message', messageSchema);
+const Message = mongoose.model("Message", messageSchema);
 export default Message;
